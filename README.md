@@ -1,3 +1,5 @@
+`Gno.land` · `Smart Contracts` · `Infrastructure`
+
 # upgrade_registry
 
 On-chain contract upgrade tracking for Gno.land.
@@ -88,5 +90,20 @@ Query specific contracts:
 gnokey query vm/qeval --data 'gno.land/r/upgrade_registry.GetLatest("g1contract...")' --remote <rpc>
 gnokey query vm/qeval --data 'gno.land/r/upgrade_registry.GetMigrationChain("g1contract...")' --remote <rpc>
 ```
+
+## Stack
+
+- [Gno](https://gno.land) — Go-like smart contract language
+- [Gno.land](https://gno.land) — Layer 1 blockchain
+
+## Part of the Gno Infrastructure Stack
+
+| Realm | Layer |
+|-------|-------|
+| [fee_split](https://github.com/SillyZir/fee-split) | Revenue & value flow |
+| [permission_registry](https://github.com/SillyZir/permission_registry) | Access control |
+| [service_registry](https://github.com/SillyZir/service_registry) | Discovery |
+| **upgrade_registry** | **Upgrade tracking** |
+| [timelock_guardian](https://github.com/SillyZir/timelock_guardian) | Security |
 
 ---
