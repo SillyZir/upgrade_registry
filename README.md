@@ -67,6 +67,20 @@ GetMigrationChain("g1contract_v1...")
 TransferOwnership(cross, "g1owner...", "g1contract_v1...", "g1new_owner...")
 ```
 
+## Integrating from another realm
+
+```go
+import "gno.land/r/upgrade_registry"
+
+func GetCurrentContract(cross realm, oldAddr string) string {
+    // Resolve the latest version of a potentially stale address.
+    // Returns oldAddr unchanged if no upgrade chain exists.
+    return upgrade_registry.GetLatest(oldAddr)
+}
+```
+
+Any realm can call `GetLatest` to resolve a canonical address without knowing whether the contract has been upgraded. Integrations built against v1 continue to work when v2 is deployed — they just resolve to the new address automatically.
+
 ## API
 
 | Function | Access | Description |
