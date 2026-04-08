@@ -28,7 +28,7 @@ func init() {
 
 // Register adds a contract to the registry. The owner address controls
 // future deprecation. Panics if inputs are empty or address is taken.
-func Register(_ realm, owner, contractAddr, name string) string {
+func Register(cross realm, owner, contractAddr, name string) string {
 	if owner == "" || contractAddr == "" || name == "" {
 		panic("owner, contractAddr, and name must not be empty")
 	}
@@ -48,7 +48,7 @@ func Register(_ realm, owner, contractAddr, name string) string {
 // Deprecate marks a contract as deprecated and points to its successor.
 // Only the registered owner can deprecate. The successor address must
 // not create a circular chain back to the current contract.
-func Deprecate(_ realm, owner, contractAddr, successorAddr string) string {
+func Deprecate(cross realm, owner, contractAddr, successorAddr string) string {
 	entry := mustGet(contractAddr)
 	if entry.Owner != owner {
 		panic("only the owner can deprecate this contract")
@@ -86,7 +86,7 @@ func Deprecate(_ realm, owner, contractAddr, successorAddr string) string {
 }
 
 // TransferOwnership hands control of a registry entry to a new owner.
-func TransferOwnership(_ realm, currentOwner, contractAddr, newOwner string) string {
+func TransferOwnership(cross realm, currentOwner, contractAddr, newOwner string) string {
 	entry := mustGet(contractAddr)
 	if entry.Owner != currentOwner {
 		panic("only the owner can transfer ownership")
