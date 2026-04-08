@@ -16,11 +16,13 @@ type ContractEntry struct {
 
 var (
 	entries        map[string]*ContractEntry
+	entryAddrs     []string // insertion-ordered for deterministic Render
 	ownerContracts map[string][]string
 )
 
 func init() {
 	entries = make(map[string]*ContractEntry)
+	entryAddrs = []string{}
 	ownerContracts = make(map[string][]string)
 }
 
@@ -41,6 +43,7 @@ func Register(_ realm, owner, contractAddr, name string) string {
 		Owner:   owner,
 		Name:    name,
 	}
+	entryAddrs = append(entryAddrs, contractAddr)
 	ownerContracts[owner] = append(ownerContracts[owner], contractAddr)
 	return "registered " + name + " at " + contractAddr
 }
@@ -193,7 +196,8 @@ func Render(path string) string {
 	var active []string
 	var deprecated []string
 
-	for addr, entry := range entries {
+	for _, addr := range entryAddrs {
+		entry := entries[addr]
 		if entry == nil {
 			continue
 		}
