@@ -1,6 +1,7 @@
 package upgrade_registry
 
 import (
+	"std"
 	"strconv"
 	"strings"
 )
@@ -26,18 +27,23 @@ func init() {
 	ownerContracts = make(map[string][]string)
 }
 
+func caller() string {
+	return string(std.PreviousRealm().Address())
+}
+
 // ---------- write operations ----------
 
-// Register adds a contract to the registry. The owner address controls
-// future deprecation. Panics if inputs are empty or address is taken.
-func Register(_ realm, owner, contractAddr, name string) string {
-	if owner == "" || contractAddr == "" || name == "" {
-		panic("owner, contractAddr, and name must not be empty")
+// Register adds a contract to the registry. The caller becomes the owner.
+// Panics if inputs are empty or address is already taken.
+func Register(_ realm, contractAddr, name string) string {
+	if contractAddr == "" || name == "" {
+		panic("contractAddr and name must not be empty")
 	}
 	if _, exists := entries[contractAddr]; exists {
 		panic("contract already registered: " + contractAddr)
 	}
 
+	owner := caller()
 	entries[contractAddr] = &ContractEntry{
 		Address: contractAddr,
 		Owner:   owner,
@@ -51,9 +57,9 @@ func Register(_ realm, owner, contractAddr, name string) string {
 // Deprecate marks a contract as deprecated and points to its successor.
 // Only the registered owner can deprecate. The successor address must
 // not create a circular chain back to the current contract.
-func Deprecate(_ realm, owner, contractAddr, successorAddr string) string {
+func Deprecate(_ realm, contractAddr, successorAddr string) string {
 	entry := mustGet(contractAddr)
-	if entry.Owner != owner {
+	if entry.Owner != caller() {
 		panic("only the owner can deprecate this contract")
 	}
 	if successorAddr == "" {
@@ -89,14 +95,27 @@ func Deprecate(_ realm, owner, contractAddr, successorAddr string) string {
 }
 
 // TransferOwnership hands control of a registry entry to a new owner.
-func TransferOwnership(_ realm, currentOwner, contractAddr, newOwner string) string {
+// Updates both the entry and the ownerContracts index.
+func TransferOwnership(_ realm, contractAddr, newOwner string) string {
 	entry := mustGet(contractAddr)
-	if entry.Owner != currentOwner {
+	oldOwner := entry.Owner
+	if oldOwner != caller() {
 		panic("only the owner can transfer ownership")
 	}
 	if newOwner == "" {
 		panic("new owner must not be empty")
 	}
+
+	// Update ownerContracts index: remove from old, add to new
+	old := ownerContracts[oldOwner]
+	for i, addr := range old {
+		if addr == contractAddr {
+			ownerContracts[oldOwner] = append(old[:i], old[i+1:]...)
+			break
+		}
+	}
+	ownerContracts[newOwner] = append(ownerContracts[newOwner], contractAddr)
+
 	entry.Owner = newOwner
 	return "ownership transferred to " + newOwner
 }
